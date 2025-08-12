@@ -2,15 +2,25 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiZap, FiUser, FiMenu, FiX } = FiIcons;
+const { FiZap, FiUser, FiMenu, FiX, FiLogOut } = FiIcons;
 
-const Header = ({ isLoggedIn, setIsLoggedIn }) => {
+const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
-    <motion.header 
+    <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200"
@@ -33,7 +43,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             <Link to="/generator" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
               Generator
             </Link>
-            {isLoggedIn && (
+            {user && (
               <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                 Dashboard
               </Link>
@@ -41,21 +51,21 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
           </nav>
 
           <div className="flex items-center space-x-6">
-            {!isLoggedIn ? (
+            {!user ? (
               <>
-                <button 
-                  onClick={() => setIsLoggedIn(true)}
+                <Link 
+                  to="/login" 
                   className="hidden sm:block text-gray-600 hover:text-gray-900 font-medium transition-colors"
                 >
                   Sign In
-                </button>
-                <button 
-                  onClick={() => setIsLoggedIn(true)}
+                </Link>
+                <Link
+                  to="/signup"
                   className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-8 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   Start Free Trial
-                </button>
-                <button 
+                </Link>
+                <button
                   className="md:hidden text-gray-600 hover:text-gray-900"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
@@ -67,11 +77,18 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
                 <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-2.5 rounded-full">
                   <SafeIcon icon={FiUser} className="w-5 h-5 text-white" />
                 </div>
-                <button 
-                  onClick={() => setIsLoggedIn(false)}
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.email && user.email.split('@')[0]}
+                  </p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center space-x-2"
                 >
-                  Sign Out
+                  <SafeIcon icon={FiLogOut} className="w-5 h-5" />
+                  <span className="hidden sm:inline">Sign Out</span>
                 </button>
               </div>
             )}
@@ -88,39 +105,37 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
           className="md:hidden bg-white/95 backdrop-blur-md border-t border-gray-200"
         >
           <div className="px-6 py-6 space-y-4">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="block px-4 py-3 rounded-lg text-base font-medium text-gray-900 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
-            <Link 
-              to="/generator" 
+            <Link
+              to="/generator"
               className="block px-4 py-3 rounded-lg text-base font-medium text-gray-900 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               Generator
             </Link>
-            {isLoggedIn && (
-              <Link 
-                to="/dashboard" 
+            {user && (
+              <Link
+                to="/dashboard"
                 className="block px-4 py-3 rounded-lg text-base font-medium text-gray-900 hover:bg-gray-50"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Dashboard
               </Link>
             )}
-            {!isLoggedIn && (
-              <button 
-                onClick={() => {
-                  setIsLoggedIn(true);
-                  setMobileMenuOpen(false);
-                }}
+            {!user && (
+              <Link
+                to="/login"
                 className="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-900 hover:bg-gray-50"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 Sign In
-              </button>
+              </Link>
             )}
           </div>
         </motion.div>
